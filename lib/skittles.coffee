@@ -44,14 +44,29 @@ module.exports = RainbowDelimiters =
   rowDelimiters: (delimiters) ->
     _.groupBy(delimiters, 'row')
 
+  # Notable limitations:
+  # reset any time you scroll
+  jqueryHack: (editor) ->
+    color = 0
+    for row, delimiters of @rowDelimiters(@delimiters(editor))
+      $row = $(".line[data-screen-row=#{row}]")
+      for delimiter, i in delimiters
+        color++ if ['{', '[', '('].includes(delimiter.text)
+        $span = $row.find('.syntax--brace, .syntax--bracket')
+        $span.eq(i).addClass("rainbow-#{color}")
+        color-- if ['}', ']', ')'].includes(delimiter.text)
+
+  markerHack: (editor) ->
+    color = 0
+    for delimiter in @delimiters(editor)
+      color++ if ['{', '[', '('].includes(delimiter.text)
+      marker = editor.markBufferRange([[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]])
+      decoration = editor.decorateMarker(marker, { type: 'highlight', class: 'content-open-brace rainbow-' + color})
+      console.log(decoration)
+      color-- if ['}', ']', ')'].includes(delimiter.text)
+
   toggle: ->
     console.log 'Skittles was toggled! Taste the Rainbow!'
     atom.workspace.observeTextEditors (editor) =>
-      color = 0
-      for row, delimiters of @rowDelimiters(@delimiters(editor))
-        $row = $(".line[data-screen-row=#{row}]")
-        for delimiter, i in delimiters
-          color++ if ['{', '[', '('].includes(delimiter.text)
-          $span = $row.find('.syntax--brace, .syntax--bracket')
-          $span.eq(i).addClass("rainbow-#{color}")
-          color-- if ['}', ']', ')'].includes(delimiter.text)
+      # @jqueryHack(editor)
+      @markerHack(editor)
