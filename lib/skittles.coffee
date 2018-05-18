@@ -53,15 +53,20 @@ module.exports = RainbowDelimiters =
     # TODO: make this support delimiters that aren't just a single character
     [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
+  color: (index) ->
+    colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+    indexInRange = (index - 1) % colors.length
+    colors[indexInRange]
+
   colorize: (editor) ->
-    color = 0
+    colorIndex = 0
     layer = editor.addMarkerLayer()
     @markerLayers.push(layer)
     for delimiter in @delimiters(editor)
-      color++ if @isOpenDelimiter(delimiter)
+      colorIndex++ if @isOpenDelimiter(delimiter)
       marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
-      decoration = editor.decorateMarker(marker, { type: 'text', class: 'rainbow-' + color })
-      color-- if @isCloseDelimiter(delimiter)
+      decoration = editor.decorateMarker(marker, { type: 'text', style: { color: @color(colorIndex) } })
+      colorIndex-- if @isCloseDelimiter(delimiter)
 
   toggle: ->
     console.log 'Skittles was toggled! Taste the Rainbow!'
@@ -73,3 +78,5 @@ module.exports = RainbowDelimiters =
       @active = true
       atom.workspace.observeTextEditors (editor) =>
         @colorize(editor)
+        editor.onDidChange =>
+          @colorize(editor)
