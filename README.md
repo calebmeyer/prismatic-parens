@@ -1,5 +1,8 @@
 # Skittles
+Taste the rainbow!
 
-Rainbow delimiter package. `Skittles:Toggle` turns it on.
+![rainbow highlighting](skittles.png)
 
-This is still alpha quality (things work, but there are too many bugs for it to be usable)
+This is my rainbow delimiter package. `Skittles: Toggle` turns it on.
+
+Lots more to come, including custom themes and support for delimiters other than brackets, braces, and parentheses.
