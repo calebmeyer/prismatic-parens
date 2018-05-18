@@ -24,7 +24,7 @@ if(a) {
           if(f) {
             if(g) {
               if(h) {
-                console.log(i)
+                console.log(i);
               }
             }
           }
