@@ -60,7 +60,7 @@ module.exports = RainbowDelimiters =
     for delimiter in @delimiters(editor)
       color++ if @isOpenDelimiter(delimiter)
       marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
-      decoration = editor.decorateMarker(marker, { type: 'text', class: 'content-open-brace rainbow-' + color })
+      decoration = editor.decorateMarker(marker, { type: 'text', class: 'rainbow-' + color })
       color-- if @isCloseDelimiter(delimiter)
 
   toggle: ->
