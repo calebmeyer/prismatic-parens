@@ -61,20 +61,15 @@ module.exports = RainbowDelimiters =
       color++ if @isOpenDelimiter(delimiter)
       marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
       decoration = editor.decorateMarker(marker, { type: 'text', class: 'content-open-brace rainbow-' + color })
-      console.log(decoration)
       color-- if @isCloseDelimiter(delimiter)
 
   toggle: ->
     console.log 'Skittles was toggled! Taste the Rainbow!'
-    if active
-      active = false
-      console.log 'killing all the things'
+    if @active
+      @active = false
       for layer in @markerLayers
-        unless layer.isDestroyed()
-          for marker in layer.getMarkers()
-            marker.destroy()
-          layer.destroy()
+        layer.destroy() unless layer.isDestroyed()
     else
-      active = true
+      @active = true
       atom.workspace.observeTextEditors (editor) =>
         @colorize(editor)
