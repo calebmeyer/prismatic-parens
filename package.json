@@ -1,7 +1,7 @@
 {
   "name": "skittles",
   "main": "./lib/skittles",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Taste the rainbow. Make all your parens, braces, and brackets beautiful",
   "keywords": [],
   "activationCommands": {
