@@ -1,5 +1,5 @@
 # Skittles
 
-A short description of your package.
+Rainbow delimiter package. `Skittles:Toggle` turns it on.
 
-![A screenshot of your package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
+This is still alpha quality (things work, but there are too many bugs for it to be usable)

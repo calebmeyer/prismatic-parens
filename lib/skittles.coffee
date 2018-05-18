@@ -1,9 +1,9 @@
 {CompositeDisposable} = require 'atom'
-_ = require 'lodash'
-$ = require 'jquery'
 
 module.exports = RainbowDelimiters =
   subscriptions: null
+  markerLayers: []
+  active: false
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -14,6 +14,8 @@ module.exports = RainbowDelimiters =
 
   deactivate: ->
     @subscriptions.dispose()
+    for layer in @markerLayers
+      layer.destroy() unless layer.isDestroyed()
 
   isDelimiter: (scopeDescriptor) ->
     scopeDescriptor.scopes.some (scope) ->
@@ -41,20 +43,38 @@ module.exports = RainbowDelimiters =
 
     return delimiters
 
-  rowDelimiters: (delimiters) ->
-    _.groupBy(delimiters, 'row')
+  isOpenDelimiter: (delimiter) ->
+    ['{', '[', '('].includes(delimiter.text)
+
+  isCloseDelimiter: (delimiter) ->
+    ['}', ']', ')'].includes(delimiter.text)
+
+  rangeForDelimiter: (delimiter) ->
+    # TODO: make this support delimiters that aren't just a single character
+    [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
   colorize: (editor) ->
     color = 0
     layer = editor.addMarkerLayer()
+    @markerLayers.push(layer)
     for delimiter in @delimiters(editor)
-      color++ if ['{', '[', '('].includes(delimiter.text)
-      marker = layer.markBufferRange([[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]])
-      decoration = editor.decorateMarker(marker, { type: 'text', class: 'content-open-brace rainbow-' + color})
+      color++ if @isOpenDelimiter(delimiter)
+      marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
+      decoration = editor.decorateMarker(marker, { type: 'text', class: 'content-open-brace rainbow-' + color })
       console.log(decoration)
-      color-- if ['}', ']', ')'].includes(delimiter.text)
+      color-- if @isCloseDelimiter(delimiter)
 
   toggle: ->
     console.log 'Skittles was toggled! Taste the Rainbow!'
-    atom.workspace.observeTextEditors (editor) =>
-      @colorize(editor)
+    if active
+      active = false
+      console.log 'killing all the things'
+      for layer in @markerLayers
+        unless layer.isDestroyed()
+          for marker in layer.getMarkers()
+            marker.destroy()
+          layer.destroy()
+    else
+      active = true
+      atom.workspace.observeTextEditors (editor) =>
+        @colorize(editor)
