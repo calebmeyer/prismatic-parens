@@ -22,6 +22,11 @@ module.exports = RainbowDelimiters =
       scope.startsWith('meta.brace') or
       (scope.startsWith('punctuation.definition') and
         not scope.includes('comment') and
+        not scope.includes('string') and
+        not scope.includes('constant') and
+        not scope.includes('variable')) or
+      (scope.startsWith('punctuation.section') and
+        not scope.includes('comment') and
         not scope.includes('string'))
 
   delimiters: (editor) ->
@@ -34,11 +39,12 @@ module.exports = RainbowDelimiters =
       for column in [0...length]
         # TODO collapse consecutive together for ruby
         scopeDescriptor = editor.scopeDescriptorForBufferPosition([row, column])
+        text = editor.getTextInBufferRange([[row, column], [row, column + 1]])
         delimiters.push {
           row: row,
           column: column,
           scopes: scopeDescriptor.scopes,
-          text: editor.getTextInBufferRange([[row, column], [row, column + 1]])
+          text: text
         } if @isDelimiter(scopeDescriptor)
 
     return delimiters
@@ -48,6 +54,15 @@ module.exports = RainbowDelimiters =
 
   isCloseDelimiter: (delimiter) ->
     ['}', ']', ')'].includes(delimiter.text)
+
+  isInterpolationSigil: (delimiter) ->
+    return false unless delimiter?
+    isInterpolation = delimiter.scopes.some (scope) ->
+      scope.includes('interpolated') or # ruby
+      scope.includes('interpolation') or # python
+      scope.includes('template') # javascript
+    isSigil = not ['{', '[', '(', ')', ']', '}'].some (nonSigil) -> delimiter.text.includes(nonSigil)
+    return isInterpolation and isSigil
 
   rangeForDelimiter: (delimiter) ->
     # TODO: make this support delimiters that aren't just a single character
@@ -62,11 +77,16 @@ module.exports = RainbowDelimiters =
     colorIndex = 0
     layer = editor.addMarkerLayer()
     @markerLayers.push(layer)
+    lastDelimiter = null
     for delimiter in @delimiters(editor)
       colorIndex++ if @isOpenDelimiter(delimiter)
       marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
-      decoration = editor.decorateMarker(marker, { type: 'text', style: { color: @color(colorIndex) } })
+
+      color = if @isInterpolationSigil(delimiter) then @color(colorIndex + 1) else @color(colorIndex)
+
+      decoration = editor.decorateMarker(marker, { type: 'text', style: { color: color } })
       colorIndex-- if @isCloseDelimiter(delimiter)
+      lastDelimiter = delimiter
 
   toggle: ->
     console.log 'Skittles was toggled! Taste the Rainbow!'
@@ -76,6 +96,9 @@ module.exports = RainbowDelimiters =
         layer.destroy() unless layer.isDestroyed()
     else
       @active = true
+      # for testing
+      # @colorize(atom.workspace.getActiveTextEditor())
+
       atom.workspace.observeTextEditors (editor) =>
         @colorize(editor)
         editor.onDidChange =>

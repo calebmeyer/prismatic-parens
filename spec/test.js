@@ -15,6 +15,8 @@ function getRelativeFilePath(filePath, configPath) {
   return filePath;
 }
 
+`interpolated ${string}`
+
 // super nested
 if(a) {
   if(b) {
