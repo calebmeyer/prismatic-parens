@@ -12,6 +12,11 @@ module.exports = PrismaticParens =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
+    atom.workspace.observeTextEditors (editor) =>
+      @colorize(editor)
+      editor.onDidChange => # TODO: Don't mark up every change
+        @colorize(editor)
+
   deactivate: ->
     @subscriptions.dispose()
     for layer in @markerLayers
@@ -74,6 +79,7 @@ module.exports = PrismaticParens =
     colors[indexInRange]
 
   colorize: (editor) ->
+    return unless @active
     editor = atom.workspace.getActiveTextEditor() unless editor
     colorIndex = 0
     layer = editor.addMarkerLayer()
@@ -90,17 +96,11 @@ module.exports = PrismaticParens =
       lastDelimiter = delimiter
 
   toggle: ->
-    console.log 'Prismatic Parens was toggled'
     if @active
+      console.log('Prismatic Core Failing...')
       @active = false
       for layer in @markerLayers
         layer.destroy() unless layer.isDestroyed()
     else
+      console.log('Prismatic Core Online!')
       @active = true
-      # for testing
-      # @colorize()
-
-      atom.workspace.observeTextEditors (editor) =>
-        @colorize(editor)
-        editor.onDidChange =>
-          @colorize(editor)
