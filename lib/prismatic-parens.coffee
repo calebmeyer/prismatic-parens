@@ -12,7 +12,7 @@ module.exports = PrismaticParens =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
-    atom.workspace.observeTextEditors (editor) =>
+    @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       @colorize(editor)
       editor.onDidChange => # TODO: Don't mark up every change
         @colorize(editor)
@@ -20,7 +20,7 @@ module.exports = PrismaticParens =
   deactivate: ->
     @subscriptions.dispose()
     for layer in @markerLayers
-      layer.destroy() unless layer.isDestroyed()
+      layer.destroy()
 
   isDelimiter: (scopeDescriptor) ->
     scopeDescriptor.scopes.some (scope) ->
@@ -100,7 +100,8 @@ module.exports = PrismaticParens =
       console.log('Prismatic Core Failing...')
       @active = false
       for layer in @markerLayers
-        layer.destroy() unless layer.isDestroyed()
+        layer.destroy()
     else
       console.log('Prismatic Core Online!')
       @active = true
+      @colorize()
