@@ -1,6 +1,6 @@
 {
-  "name": "taste-the-rainbow",
-  "main": "./lib/prismatic-parens",
+  "name": "prismatic-parens",
+  "main": "./lib/prismatic-parens.coffee",
   "version": "1.0.1",
   "description": "Prismatic Parentheses makes all your parens, braces, and brackets beautiful",
   "keywords": ["rainbow", "delimiter", "delimiters", "paren", "parens", "bracket", "brackets", "brace", "braces"],
