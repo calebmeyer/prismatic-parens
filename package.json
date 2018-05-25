@@ -1,13 +1,13 @@
 {
-  "name": "skittles",
-  "main": "./lib/skittles",
+  "name": "taste-the-rainbow",
+  "main": "./lib/prismatic-parens",
   "version": "1.0.1",
-  "description": "Taste the rainbow. Make all your parens, braces, and brackets beautiful",
-  "keywords": [],
+  "description": "Prismatic Parentheses makes all your parens, braces, and brackets beautiful",
+  "keywords": ["rainbow", "delimiter", "delimiters", "paren", "parens", "bracket", "brackets", "brace", "braces"],
   "activationCommands": {
-    "atom-workspace": "skittles:toggle"
+    "atom-workspace": "prismatic-parens:toggle"
   },
-  "repository": "https://github.com/calebmeyer/skittles",
+  "repository": "https://github.com/calebmeyer/prismatic-parens",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"

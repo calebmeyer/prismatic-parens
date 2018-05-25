@@ -1,6 +1,6 @@
 {CompositeDisposable} = require 'atom'
 
-module.exports = RainbowDelimiters =
+module.exports = PrismaticParens =
   subscriptions: null
   markerLayers: []
   active: false
@@ -10,7 +10,7 @@ module.exports = RainbowDelimiters =
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'skittles:toggle': => @toggle()
+    @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
   deactivate: ->
     @subscriptions.dispose()
@@ -74,6 +74,7 @@ module.exports = RainbowDelimiters =
     colors[indexInRange]
 
   colorize: (editor) ->
+    editor = atom.workspace.getActiveTextEditor() unless editor
     colorIndex = 0
     layer = editor.addMarkerLayer()
     @markerLayers.push(layer)
@@ -89,7 +90,7 @@ module.exports = RainbowDelimiters =
       lastDelimiter = delimiter
 
   toggle: ->
-    console.log 'Skittles was toggled! Taste the Rainbow!'
+    console.log 'Prismatic Parens was toggled'
     if @active
       @active = false
       for layer in @markerLayers
@@ -97,7 +98,7 @@ module.exports = RainbowDelimiters =
     else
       @active = true
       # for testing
-      # @colorize(atom.workspace.getActiveTextEditor())
+      # @colorize()
 
       atom.workspace.observeTextEditors (editor) =>
         @colorize(editor)
