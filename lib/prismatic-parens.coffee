@@ -2,7 +2,7 @@
 
 module.exports = PrismaticParens =
   subscriptions: null
-  markerLayers: []
+  markerLayer: null
   active: false
 
   activate: (state) ->
@@ -19,8 +19,7 @@ module.exports = PrismaticParens =
 
   deactivate: ->
     @subscriptions.dispose()
-    for layer in @markerLayers
-      layer.destroy()
+    @markerLayer.destroy() if @markerLayer?
 
   isDelimiter: (scopeDescriptor) ->
     scopeDescriptor.scopes.some (scope) ->
@@ -82,25 +81,30 @@ module.exports = PrismaticParens =
     return unless @active
     editor = atom.workspace.getActiveTextEditor() unless editor
     colorIndex = 0
-    layer = editor.addMarkerLayer()
-    @markerLayers.push(layer)
+
+    # regenerate marker layer. This may be bad for performance, but my invalidation was not working.
+    @markerLayer.destroy() if @markerLayer?
+    @markerLayer = editor.addMarkerLayer()
+
     lastDelimiter = null
+
     for delimiter in @delimiters(editor)
       colorIndex++ if @isOpenDelimiter(delimiter)
-      marker = layer.markBufferRange(@rangeForDelimiter(delimiter), { invalidate: 'inside' })
+      marker = @markerLayer.markBufferRange(@rangeForDelimiter(delimiter))
 
       color = if @isInterpolationSigil(delimiter) then @color(colorIndex + 1) else @color(colorIndex)
 
       decoration = editor.decorateMarker(marker, { type: 'text', style: { color: color } })
+
       colorIndex-- if @isCloseDelimiter(delimiter)
       lastDelimiter = delimiter
+
 
   toggle: ->
     if @active
       console.log('Prismatic Core Failing...')
       @active = false
-      for layer in @markerLayers
-        layer.destroy()
+      @markerLayer.destroy() if @markerLayer?
     else
       console.log('Prismatic Core Online!')
       @active = true
