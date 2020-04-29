@@ -41,15 +41,16 @@ module.exports = PrismaticParens =
     for line, row in lines
       length = buffer.lineLengthForRow(row)
       for column in [0...length]
-        # TODO collapse consecutive together for ruby
         scopeDescriptor = editor.scopeDescriptorForBufferPosition([row, column])
         text = editor.getTextInBufferRange([[row, column], [row, column + 1]])
-        delimiters.push {
-          row: row,
-          column: column,
-          scopes: scopeDescriptor.scopes,
-          text: text
-        } if @isDelimiter(scopeDescriptor)
+        
+        if @isDelimiter(scopeDescriptor)
+          delimiters.push {
+            row: row,
+            column: column,
+            scopes: scopeDescriptor.scopes,
+            text: text
+          }
 
     return delimiters
 
