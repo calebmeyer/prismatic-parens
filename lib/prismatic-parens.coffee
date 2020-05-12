@@ -37,28 +37,46 @@ module.exports = PrismaticParens =
     buffer = editor.getBuffer()
     lines = buffer.getLines()
     delimiters = []
+    lastOpenedStack = []
 
     for line, row in lines
       length = buffer.lineLengthForRow(row)
       for column in [0...length]
         scopeDescriptor = editor.scopeDescriptorForBufferPosition([row, column])
         text = editor.getTextInBufferRange([[row, column], [row, column + 1]])
-        
+
         if @isDelimiter(scopeDescriptor)
+          unmatched = false
+          if @isOpenDelimiter(text)
+            lastOpenedStack.push({ text: text, index: delimiters.length })
+          else if @isCloseDelimiter(text)
+            open = lastOpenedStack.pop()
+            unmatched = !@matches(open.text, text)
+            delimiters[open.index].unmatched = unmatched if delimiters[open.index]?
+            unmatched = true unless open
+
           delimiters.push {
             row: row,
             column: column,
             scopes: scopeDescriptor.scopes,
-            text: text
+            text: text,
+            unmatched: unmatched
           }
 
+    console.log(delimiters)
     return delimiters
 
   isOpenDelimiter: (delimiter) ->
-    ['{', '[', '('].includes(delimiter.text)
+    delimiter in ['{', '[', '(']
 
   isCloseDelimiter: (delimiter) ->
-    ['}', ']', ')'].includes(delimiter.text)
+    delimiter in ['}', ']', ')']
+
+  matches: (open, close) ->
+    return true if open is '{' and close is '}'
+    return true if open is '[' and close is ']'
+    return true if open is '(' and close is ')'
+    return false
 
   isInterpolationSigil: (delimiter) ->
     return false unless delimiter?
@@ -87,19 +105,18 @@ module.exports = PrismaticParens =
     @markerLayer.destroy() if @markerLayer?
     @markerLayer = editor.addMarkerLayer()
 
-    lastDelimiter = null
-
     for delimiter in @delimiters(editor)
-      colorIndex++ if @isOpenDelimiter(delimiter)
       marker = @markerLayer.markBufferRange(@rangeForDelimiter(delimiter))
+      if delimiter.unmatched
+        editor.decorateMarker(marker, { type: 'text', style: { color: 'red', 'border-bottom': '1px dotted red' } })
+      else
+        colorIndex++ if @isOpenDelimiter(delimiter.text)
 
-      color = if @isInterpolationSigil(delimiter) then @color(colorIndex + 1) else @color(colorIndex)
+        color = if @isInterpolationSigil(delimiter) then @color(colorIndex + 1) else @color(colorIndex)
 
-      decoration = editor.decorateMarker(marker, { type: 'text', style: { color: color } })
+        decoration = editor.decorateMarker(marker, { type: 'text', style: { color: color } })
 
-      colorIndex-- if @isCloseDelimiter(delimiter)
-      lastDelimiter = delimiter
-
+        colorIndex-- if @isCloseDelimiter(delimiter)
 
   toggle: ->
     if @active
