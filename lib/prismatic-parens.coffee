@@ -116,7 +116,7 @@ module.exports = PrismaticParens =
 
         decoration = editor.decorateMarker(marker, { type: 'text', style: { color: color } })
 
-        colorIndex-- if @isCloseDelimiter(delimiter)
+        colorIndex-- if @isCloseDelimiter(delimiter.text)
 
   toggle: ->
     if @active
