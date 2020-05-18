@@ -84,7 +84,9 @@ module.exports = PrismaticParens =
             unmatched: unmatched
           }
 
-    console.log(delimiters)
+    # TODO: Add debug
+    # console.log(delimiters)
+
     return delimiters
 
   isOpenDelimiter: (delimiter) ->
