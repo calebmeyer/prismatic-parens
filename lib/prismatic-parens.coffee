@@ -51,9 +51,30 @@ module.exports = PrismaticParens =
             lastOpenedStack.push({ text: text, index: delimiters.length })
           else if @isCloseDelimiter(text)
             open = lastOpenedStack.pop()
-            unmatched = !@matches(open.text, text)
-            delimiters[open.index].unmatched = unmatched if delimiters[open.index]?
-            unmatched = true unless open
+
+            if open?
+              # if the last delimiter matches, skip to the push call below
+
+              # however, if the last delimiter does not match
+              if !@matches(open.text, text)
+                delimiters[open.index].unmatched = true
+
+                # loop over the remaining delimiters, looking for any that match.
+                # Each that doesn't is an unmatched delimiter, mark it and go to the next one.
+                # The first that does match terminates the loop and goes to the push call below.
+                open = lastOpenedStack.pop()
+                while open?
+                  if @matches(open.text, text)
+                    # found a matching open delimiter
+                    break
+                  else
+                    # found an unmatched open delimiter
+                    delimiters[open.index].unmatched = true
+                    open = lastOpenedStack.pop()
+
+
+            else # there was no open delimiter to match to
+              unmatched = true
 
           delimiters.push {
             row: row,
