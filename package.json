@@ -1,7 +1,7 @@
 {
   "name": "prismatic-parens",
   "main": "./lib/prismatic-parens",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Prismatic Parentheses makes all your parens, braces, and brackets beautiful",
   "keywords": [
     "rainbow",
