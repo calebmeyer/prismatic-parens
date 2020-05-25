@@ -119,8 +119,9 @@ module.exports = PrismaticParens =
     [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
   color: (index) ->
-    indexInRange = (index - 1) % @colors.length
-    @colors[indexInRange]
+    colors = @colors || ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
+    indexInRange = (index - 1) % colors.length
+    colors[indexInRange]
 
   colorize: (editor) ->
     return unless @active
