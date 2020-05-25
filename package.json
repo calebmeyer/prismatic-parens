@@ -14,13 +14,12 @@
     "brace",
     "braces"
   ],
-  "activationCommands": {
-    "atom-workspace": "prismatic-parens:toggle"
-  },
   "repository": "https://github.com/calebmeyer/prismatic-parens",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "color": "3.1.2"
+  }
 }

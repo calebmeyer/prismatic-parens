@@ -1,4 +1,5 @@
 {CompositeDisposable} = require 'atom'
+{getThemeColors} = require './get-theme-colors'
 
 module.exports = PrismaticParens =
   subscriptions: null
@@ -11,6 +12,8 @@ module.exports = PrismaticParens =
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
+
+    @colors = getThemeColors()
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       @colorize(editor)
@@ -115,9 +118,8 @@ module.exports = PrismaticParens =
     [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
   color: (index) ->
-    colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
-    indexInRange = (index - 1) % colors.length
-    colors[indexInRange]
+    indexInRange = (index - 1) % @colors.length
+    @colors[indexInRange]
 
   colorize: (editor) ->
     return unless @active
