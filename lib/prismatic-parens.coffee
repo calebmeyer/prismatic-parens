@@ -16,7 +16,6 @@ module.exports = PrismaticParens =
     @colors = null;
 
     atom.whenShellEnvironmentLoaded () =>
-      @colors = getThemeColors()
       @subscriptions.add atom.workspace.observeTextEditors (editor) =>
         @colorize(editor)
         editor.onDidChange => # TODO: Don't mark up every change
@@ -120,7 +119,7 @@ module.exports = PrismaticParens =
     [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
   color: (index) ->
-    colors = @colors || getThemeColors() || ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
+    colors = getThemeColors()
     indexInRange = (index - 1) % colors.length
     colors[indexInRange]
 
