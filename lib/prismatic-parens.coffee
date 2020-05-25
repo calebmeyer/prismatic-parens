@@ -9,26 +9,33 @@ module.exports = PrismaticParens =
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
+    @subscriptionsForTheme = new CompositeDisposable
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
-    @colors = null;
-    getThemeColors = @once(getThemeColors);
+    # should never need these fallbacks, they're just in case
+    @colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 
     @debug('Activated')
 
-    atom.whenShellEnvironmentLoaded () =>
+    @subscriptions.add atom.whenShellEnvironmentLoaded () =>
       @debug('Shell environment loaded')
-      @subscriptions.add atom.workspace.observeTextEditors (editor) =>
-        @colors = getThemeColors()
-        @colorize(editor)
+      @colors = getThemeColors()
 
-        @subscriptions.add editor.onDidChange => # TODO: Don't mark up every change
+      @subscriptions.add atom.themes.onDidChangeActiveThemes () =>
+        @debug('themes changed to ' + atom.themes.getActiveThemeNames())
+        @colors = getThemeColors()
+        @subscriptionsForTheme.dispose() # clear the subscriptions for the previous theme
+
+        @subscriptionsForTheme.add atom.workspace.observeTextEditors (editor) =>
           @colorize(editor)
 
-      @subscriptions.add atom.workspace.onDidChangeActiveTextEditor (editor) =>
-        @colorize(editor) if editor?
+          @subscriptionsForTheme.add editor.onDidChange => # TODO: Don't mark up every change
+            @colorize(editor)
+
+        @subscriptionsForTheme.add atom.workspace.onDidChangeActiveTextEditor (editor) =>
+          @colorize(editor) if editor?
 
   deactivate: ->
     @subscriptions.dispose()
@@ -165,15 +172,5 @@ module.exports = PrismaticParens =
       @colorize()
 
   # utility functions
-  once: (fn) =>
-    result = null
-    return () =>
-      if fn
-        console.log('executing function once')
-        result = fn.apply(this, arguments)
-        fn = null
-      console.log('returning result')
-      result
-
   debug: (message) ->
-    console.log(message) if atom.inDevMode()
+    console.log(message) # if atom.inDevMode()
