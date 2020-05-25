@@ -2,7 +2,7 @@
 ![monokai](./monokai.png)
 
 ## Description
-This is my rainbow delimiter package. It will automatically detect and highlight your parentheses, brackets, and braces according to your current syntax theme. Unmatched delimiters are underlined and highlighted red.
+This is my rainbow delimiter package. It will automatically detect and highlight your parentheses, brackets, and braces according to your current syntax theme. Unmatched delimiters are underlined and highlighted red. If it gets bothersome, you can turn it off with `Prismatic Parens: Toggle` in your command palette.
 
 ## Install
 You can install this in the atom settings menu by searching for prismatic parens, or using `apm` at your terminal with `apm install prismatic-parens`

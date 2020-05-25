@@ -4,7 +4,7 @@
 module.exports = PrismaticParens =
   subscriptions: null
   markerLayer: null
-  active: false
+  active: true
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -13,9 +13,10 @@ module.exports = PrismaticParens =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
-    @colors = getThemeColors()
+    @colors = null;
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
+      @colors = @colors || getThemeColors()
       @colorize(editor)
       editor.onDidChange => # TODO: Don't mark up every change
         @colorize(editor)
