@@ -3,7 +3,7 @@
 
 module.exports = PrismaticParens =
   subscriptions: null
-  markerLayer: null
+  markerLayers: []
   active: true
 
   activate: (state) ->
@@ -14,12 +14,21 @@ module.exports = PrismaticParens =
     @subscriptions.add atom.commands.add 'atom-workspace', 'prismatic-parens:toggle': => @toggle()
 
     @colors = null;
+    getThemeColors = @once(getThemeColors);
+
+    @debug('Activated')
 
     atom.whenShellEnvironmentLoaded () =>
+      @debug('Shell environment loaded')
       @subscriptions.add atom.workspace.observeTextEditors (editor) =>
+        @colors = getThemeColors()
         @colorize(editor)
-        editor.onDidChange => # TODO: Don't mark up every change
+
+        @subscriptions.add editor.onDidChange => # TODO: Don't mark up every change
           @colorize(editor)
+
+      @subscriptions.add atom.workspace.onDidChangeActiveTextEditor (editor) =>
+        @colorize(editor) if editor?
 
   deactivate: ->
     @subscriptions.dispose()
@@ -88,8 +97,7 @@ module.exports = PrismaticParens =
             unmatched: unmatched
           }
 
-    # TODO: Add debug
-    # console.log(delimiters)
+    # @debug(delimiters)
 
     return delimiters
 
@@ -119,9 +127,8 @@ module.exports = PrismaticParens =
     [[delimiter.row, delimiter.column], [delimiter.row, delimiter.column + 1]]
 
   color: (index) ->
-    colors = getThemeColors()
-    indexInRange = (index - 1) % colors.length
-    colors[indexInRange]
+    indexInRange = (index - 1) % @colors.length
+    @colors[indexInRange]
 
   colorize: (editor) ->
     return unless @active
@@ -129,11 +136,11 @@ module.exports = PrismaticParens =
     colorIndex = 0
 
     # regenerate marker layer. This may be bad for performance, but my invalidation was not working.
-    @markerLayer.destroy() if @markerLayer?
-    @markerLayer = editor.addMarkerLayer()
+    @markerLayers[editor.id].destroy() if @markerLayers[editor.id]?
+    @markerLayers[editor.id] = editor.addMarkerLayer()
 
     for delimiter in @delimiters(editor)
-      marker = @markerLayer.markBufferRange(@rangeForDelimiter(delimiter))
+      marker = @markerLayers[editor.id].markBufferRange(@rangeForDelimiter(delimiter))
       if delimiter.unmatched
         editor.decorateMarker(marker, { type: 'text', style: { color: 'red', 'border-bottom': '1px dotted red' } })
       else
@@ -149,8 +156,24 @@ module.exports = PrismaticParens =
     if @active
       console.log('Prismatic Core Failing...')
       @active = false
-      @markerLayer.destroy() if @markerLayer?
+      if @markerLayers? && @markerLayers.length > 0
+        @markerLayers.forEach((layer) => layer.destroy())
+        @markerLayers = []
     else
       console.log('Prismatic Core Online!')
       @active = true
       @colorize()
+
+  # utility functions
+  once: (fn) =>
+    result = null
+    return () =>
+      if fn
+        console.log('executing function once')
+        result = fn.apply(this, arguments)
+        fn = null
+      console.log('returning result')
+      result
+
+  debug: (message) ->
+    console.log(message) if atom.inDevMode()
